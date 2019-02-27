@@ -26,7 +26,6 @@ import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.Elements;
 
-/**@AutoServic用于自动生成META-INF信息*/
 @AutoService(Processor.class)
 @SupportedSourceVersion(SourceVersion.RELEASE_8)
 public class BindProcessor extends AbstractProcessor {
@@ -69,19 +68,20 @@ public class BindProcessor extends AbstractProcessor {
 
             TypeSpec typeSpec = generateTypeSpec(enclosingElement, methodSpec);
 
-            JavaFile javaFile = generateJavaFile(enclosingElement, typeSpec);
-
-            try {
-                javaFile.writeTo(processingEnv.getFiler());
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            generateJavaFile(enclosingElement, typeSpec);
         }
         return true;
     }
 
-    private JavaFile generateJavaFile(TypeElement enclosingElement, TypeSpec typeSpec) {
-        return JavaFile.builder(elementUtils.getPackageOf(enclosingElement).getQualifiedName().toString(), typeSpec).build();
+    private boolean generateJavaFile(TypeElement enclosingElement, TypeSpec typeSpec) {
+        JavaFile javaFile = JavaFile.builder(elementUtils.getPackageOf(enclosingElement).getQualifiedName().toString(), typeSpec).build();
+        try {
+            javaFile.writeTo(processingEnv.getFiler());
+            return true;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 
     private TypeSpec generateTypeSpec(TypeElement enclosingElement, MethodSpec methodSpec) {
@@ -117,9 +117,6 @@ public class BindProcessor extends AbstractProcessor {
                 elements.put(enclosingElement, set);
             }
             set.add(element);
-            System.out.println("Add element :element name:" + element.getSimpleName() + "\tenclosingElement name:"+enclosingElement.getSimpleName());
         }
-
-
     }
 }
